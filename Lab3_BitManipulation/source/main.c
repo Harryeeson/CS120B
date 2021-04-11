@@ -22,12 +22,10 @@ int main(void) {
 	unsigned char tmpA = 0x00;
 	unsigned char tmpC = 0x00;
 	unsigned char temp = 0x00;
-        unsigned char tempTwo = 0x00;
     while (1) {
 	tmpA = PINA;
 	tmpC = 0x00;
 	temp = tmpA << 4;
-	tempTwo = tmpA >> 4;
 	
 	if(temp == 0x00) {
 		tmpC = tmpC | 0x40;
@@ -59,14 +57,10 @@ int main(void) {
         }
 
 	// level 13-15 PC5-PC0
-	else if(temp == 0xD0 || temp == 0xE0 ||  temp == 0xF0) {
+	else if(temp == 0xD0 || temp == 0xE0 || temp == 0xF0) {
                 tmpC = tmpC | 0x3F;
         }
 
-	// Fasten seatbelt PC7 is 1 if PA4 and PA5 and !PA6
-	if(tempTwo == 0x03) {
-		tmpC = tmpC | 0x80;
-	}
 
 	PORTC = tmpC;
     }
