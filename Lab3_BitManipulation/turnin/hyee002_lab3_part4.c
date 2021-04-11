@@ -27,6 +27,8 @@ int main(void) {
 	unsigned char temp = 0x00;
     while (1) {
 	tmpA = PINA;
+	tmpB = 0x00;
+	tmpC = 0x00;
 	
 	// upper nibble of PINA
 	temp = tmpA >> 4;

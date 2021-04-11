@@ -14,30 +14,32 @@
 
 int main(void) {
     /* Insert DDR and PORT initializations */
-	DDRD = 0x00;
-	PORTD = 0xFF;
-	DDRB = 0x0F;		// input on high nibble output on low nibble
+	DDRA = 0x00;
+	PORTA = 0xFF;
+	DDRB = 0xFF;
 	PORTB = 0x00;
+	DDRC = 0xFF;
+	PORTC = 0x00;
     /* Insert your solution below */
-	unsigned char tmpD = 0x00;
+	unsigned char tmpA = 0x00;
 	unsigned char tmpB = 0x00;
+	unsigned char tmpC = 0x00;
 	unsigned char temp = 0x00;
-	unsigned short totalWeight = 0x0000;
     while (1) {
+	tmpA = PINA;
 	tmpB = 0x00;
-	tmpD = PIND;
-	temp = PINB >> 4;
-	totalWeight = (tmpD << 1) | (temp & 0x01);
-	if(totalWeight >= 0x0046){
-		tmpB = tmpB | 0x02;
-	}
-	else if(totalWeight > 0x0005) {
-		tmpB = tmpB | 0x04;
-	}
-	else {
-	    tmpB = 0x00;
-	}	    
+	tmpC = 0x00;
+	
+	// upper nibble of PINA
+	temp = tmpA >> 4;
+	tmpB = (tmpB | temp);
+
+	// lower nibble of PINA
+	temp = tmpA << 4;
+	tmpC = (tmpC | temp);
+	    
 	PORTB = tmpB;
+	PORTC = tmpC;
     }
     return 1;
 }
