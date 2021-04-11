@@ -21,6 +21,7 @@ int main(void) {
     /* Insert your solution below */
 	unsigned char tmpA = 0x00;
 	unsigned char tmpC = 0x00;
+	unsigned char temp = 0x00;
     while (1) {
 	tmpA = PINA;
 	tmpC = 0x00;
