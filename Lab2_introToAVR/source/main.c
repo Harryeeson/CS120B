@@ -37,8 +37,8 @@ int main(void) {
 	/* Calculate total weight */
 	totalWeight = tmpA + tmpB + tmpC;
 	
-	tmpD = totalWeight & 0x00FC;	// 6 leftmost digits are approximate total weight
-					// 2 right most digits are for flags
+	tmpD = (totalWeight >> 2) & 0x00FC;	// 6 leftmost digits are approximate total weight
+						// 2 right most digits are for flags
 
 	if(totalWeight > 0x008C) {	// total weight > 140 kg
 		tmpD = tmpD | 0x01;
