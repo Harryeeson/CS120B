@@ -24,43 +24,41 @@ int main(void) {
     while (1) {
 	tmpA = PINA;
 	tmpC = 0x00;
+	temp = tmpA << 4;
 	
-	if(tmpA == 0x00) {
+	if(temp == 0x00) {
 		tmpC = tmpC | 0x40;
 	}
 
 	// level 1 or 2 PC5 light
-	else if(tmpA == 0x01 || tmpA == 0x02) {
+	else if(temp == 0x10 || temp == 0x20) {
                 tmpC = tmpC | 0x60;
         }
 
 	// level 3 or 4 PC5 and PC4
-	else if(tmpA == 0x03 || tmpA == 0x04) {
+	else if(temp == 0x30 || temp == 0x40) {
                 tmpC = tmpC | 0x70;
         }
 
 	// level 5 or 6 PC5-PC3
-	else if(tmpA == 0x05 || tmpA == 0x06) {
+	else if(temp == 0x50 || temp == 0x60) {
                 tmpC = tmpC | 0x38;
         }
 
 	// level 7-9 PC5-PC2
-	else if(tmpA == 0x07 || tmpA == 0x08 || tmpA == 0x09) {
+	else if(temp == 0x70 || temp == 0x80 || temp == 0x90) {
                 tmpC = tmpC | 0x3C;
         }
 
 	// level 10-12 PC5-PC1
-	else if(tmpA == 0x0A || tmpA == 0x0B || tmpA == 0x0C) {
+	else if(temp == 0xA0 || temp == 0xB0 || temp == 0xC0) {
                 tmpC = tmpC | 0x3E;
         }
 
 	// level 13-15 PC5-PC0
-	else if(tmpA == 0x0D || tmpA == 0x0E || tmpA == 0x0F) {
+	else if(temp == 0xD0 || temp == 0xE0 || temp == 0xF0) {
                 tmpC = tmpC | 0x3F;
         }
-	else if(tmpA == 0x83) {
-		tmpC = tmpC | 0x70;
-	}
 
 
 	PORTC = tmpC;
