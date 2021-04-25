@@ -14,18 +14,30 @@
 
 unsigned char button0 = 0x00;
 unsigned char button1 = 0x00;
-enum SM1_States {SM1_SMStart, SM1_First, SM1_Wait, SM1_Inc, SM1_WaitInc, SM1_Dec, SM1_WaitDec, SM1_Reset, SM1_WaitReset} SM1_State;
+enum SM1_States {SM1_SMStart, /*SM1_First,*/ SM1_Wait, SM1_Inc, SM1_WaitInc, SM1_Dec, SM1_WaitDec, SM1_Reset, SM1_WaitReset, SM1_WaitTemp} SM1_State;
 void Tick() {
     switch(SM1_State) {
 	case SM1_SMStart:
-		SM1_State = SM1_First;
-		break;
-
-	case SM1_First:
 		SM1_State = SM1_Wait;
 		break;
 
+	/*case SM1_First:
+		SM1_State = SM1_Wait;
+		break;*/
+
 	case SM1_Wait:
+		if(button0 && button1) {
+			SM1_State = SM1_Reset;
+		}
+		else if(button0 && !button1) {
+			SM1_State = SM1_Inc;
+		}
+		else if(!button0 && button1) {
+			SM1_State = SM1_Dec;
+		}
+		break;
+
+	case SM1_WaitTemp:
 		if(button0 && button1) {
 			SM1_State = SM1_Reset;
 		}
@@ -49,7 +61,7 @@ void Tick() {
 			SM1_State = SM1_WaitInc;
 		}
 		else if(!button0 && !button1) {
-			SM1_State = SM1_Wait;
+			SM1_State = SM1_WaitTemp;
 		}
 		break;
 
@@ -65,7 +77,7 @@ void Tick() {
 			SM1_State = SM1_WaitDec;
 		}
 		else if(!button0 && !button1) {
-			SM1_State = SM1_Wait;
+			SM1_State = SM1_WaitTemp;
 		}
 
 		break;
@@ -79,17 +91,21 @@ void Tick() {
 			SM1_State = SM1_Reset;
 		}
 		else if(!button0 && !button1) {
-			SM1_State = SM1_Wait;
+			SM1_State = SM1_WaitTemp;
 		}
 		break; 
 			
     }
     switch(SM1_State) {
-	case SM1_First:
+	/*case SM1_First:
+		PORTC = 0x07;
+		break;*/
+
+	case SM1_Wait:
 		PORTC = 0x07;
 		break;
 
-	case SM1_Wait:
+	case SM1_WaitTemp:
 		break;
 
 	case SM1_Inc:
@@ -118,6 +134,7 @@ void Tick() {
 		break;
 
 	default:
+		PORTC = 0x07;
 		break;
     }
 }
