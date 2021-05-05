@@ -1,15 +1,16 @@
 /*	Author: Harrison Yee
  *  Partner(s) Name: 
  *	Lab Section: 21
- *	Assignment: Lab 8  Exercise 1
+ *	Assignment: Lab 8  Exercise 3
  *	Exercise Description: [optional - include for your own benefit]
  *
  *	I acknowledge all content contained herein, excluding template or example
  *	code, is my own original work.
  *
- * 	Demo Link:
+ * 	Demo Link: https://drive.google.com/file/d/1wEUauqYNuZl6H_OdlTWJOEt-bphGNC2P/view?usp=sharing
  */
 #include <avr/io.h>
+#include "timer.h"
 #ifdef _SIMULATE_
 #include "simAVRHeader.h"
 #endif
@@ -56,7 +57,9 @@ void PWM_off() {
 	TCCR3B = 0x00;
 }
 
-enum States {Start, State_Wait, Note_C, Note_D, Note_E} State;
+unsigned char i = 0x00;
+double noteArr[15] = {329.63, 293.66, 261.63, 293.66, 329.63, 0, 329.63, 0, 329.63, 293.66, 0, 293.66, 329.63, 293.66, 261.63};
+enum States {Start, State_Wait, Play, Play_Wait} State;
 void Tick() {
 	switch(State) {
 		case Start:
@@ -64,67 +67,50 @@ void Tick() {
 			break;
 
 		case State_Wait:
-			if((~PINA & 0x07) == 0x01) {
-				State = Note_C;
-			}
-			else if((~PINA & 0x07) == 0x02) {
-				State = Note_D;
-			}
-			else if((~PINA & 0x07) == 0x04) {
-				State = Note_E;
+			if(~PINA & 0x01) {	
+				State = Play;
 			}
 			else {
 				State = State_Wait;
 			}
 			break;
 
-		case Note_C:
-			if((~PINA & 0x07) == 0x01) {
-				State = Note_C;
+		case Play:
+			if(i < 0x0F) {
+				State = Play;
 			}
 			else {
-				State = State_Wait;
+				State = Play_Wait;
 			}
 			break;
 
-		case Note_D:
-			if((~PINA & 0x07) == 0x02) {
-				State = Note_D;
-			}
-			else {
+		case Play_Wait:
+			if((~PINA & 0x01) == 0x00) {		// button is not held
 				State = State_Wait;
 			}
-			break;
-
-		case Note_E:
-			if((~PINA & 0x07) == 0x04) {
-				State = Note_E;
-			}
 			else {
-				State = State_Wait;
+				State = Play_Wait;
 			}
 			break;
-
+			
 	}
 	switch(State) {
 		case State_Wait:
-			set_PWM(0);
+			i = 0x00;				// reset to beginning of melody
 			break;
-
-		case Note_C:
-			set_PWM(261.63);
+		
+		case Play:
+			if(i < 0x0F) {
+				set_PWM(noteArr[i]);
+				i++;
+			}
 			break;
-
-		case Note_D:
-			set_PWM(293.66);
-			break;
-
-		case Note_E:
-			set_PWM(329.63);
+	
+		case Play_Wait:
+			set_PWM(0);				// turn off while button is held
 			break;
 
 		default:
-			set_PWM(0);
 			break;
 	}
 }
@@ -137,8 +123,12 @@ int main(void) {
     PORTB = 0x00;
     /* Insert your solution below */
     PWM_on();
+    TimerSet(250);
+    TimerOn();
     while (1) {
 	Tick();	
+	while(!TimerFlag);
+	TimerFlag = 0;
     }
     return 1;
 }
