@@ -19,15 +19,18 @@
 // pattern: (0 - Off), (1 - On)
 // row: (0 - On), (1 - Off)
 
-static task task1, task2;
-task *tasks[] = {&task1, &task2};
+static task task1, task2, task3, task4;
+task *tasks[] = {&task1, &task2, &task3, &task4};
 //starting point for each array
 unsigned char colArr[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
-unsigned char rowArr[3] = {0x03, 0x07, 0x0F};
+unsigned char rowArr[3] = {0x03, 0x07, 0x0F}; 
+unsigned char stackedCol[8];
+unsigned char stackedRow[8];
 unsigned char pattern = 0x01;
 unsigned char row = 0x03;
 unsigned char j = 0x00;
 unsigned char k = 0x00;
+unsigned char x = 0x00;
 unsigned char FirstFlag = 0x00;
 
 enum LED_States {LED_Start, LED_Display, LED_Reverse, LED_Off};
@@ -86,6 +89,48 @@ int LED_Tick(int state) {
 	}
 	PORTC = pattern;
 	PORTD = row;
+	return state;
+}
+
+enum Stacked_States {Stacked_Display, Stacked_Off};
+int Stacked_Tick(int state) {
+	switch(state) {
+		case Stacked_Display:
+			state = Stacked_Display;
+			break;
+
+		case Stacked_Off:
+			state = Stacked_Off;
+			break;
+
+		default:
+			state = Stacked_Display;
+			break;
+	}
+
+	switch(state) {
+		case Stacked_Display:
+			if(j > 0) {
+				if(x < j) {
+					PORTC = stackedCol[x];
+					PORTD = stackedRow[x];
+					x++;
+				}
+				else {
+					x = 0x00;
+					PORTC = stackedCol[x];
+					PORTD = stackedRow[x];
+				}
+			}
+			break;
+
+		case Stacked_Off:
+			break;
+
+		default:
+			break;
+	}
+
 	return state;
 }
 
@@ -151,6 +196,8 @@ int Button_Tick(int state) {
 			break;
 
 		case Button_Next:
+			stackedCol[j] = pattern;
+			stackedRow[j] =  row;
 			if(tasks[0]->state == LED_Reverse) {
 				tasks[0]->state = LED_Start;
 			}
@@ -168,11 +215,13 @@ int Button_Tick(int state) {
 		
 		case Button_Off:
 			tasks[0]->state = LED_Off;
+			tasks[2]->state = Stacked_Off;
 			pattern = 0x00;
 			break;
 
 		case Button_On:
 			tasks[0]->state = LED_Start;
+			tasks[2]->state = Stacked_Display;
 			pattern = colArr[j];
 			row = rowArr[k];
 			FirstFlag = 0x01;
@@ -184,6 +233,31 @@ int Button_Tick(int state) {
 			tasks[0]->state = LED_Start;
 			pattern = colArr[0];
 			row = rowArr[0];
+			PORTC = pattern;
+			PORTD = row;
+			break;
+
+		default:
+			break;
+	}
+
+	return state;
+}
+
+enum Current_States {Current_Display};
+int Current_Tick(int state) {
+	switch(state) {
+		case Current_Display:
+			state = Current_Display;
+			break;
+
+		default:
+			state = Current_Display;
+			break;
+	}
+
+	switch(state) {
+		case Current_Display:
 			PORTC = pattern;
 			PORTD = row;
 			break;
@@ -215,6 +289,17 @@ int main(void) {
     task2.elapsedTime = task2.period;
     task2.TickFct = &Button_Tick;
 
+    task3.state = start;
+    task3.period = 1;
+    task3.elapsedTime = task3.period;
+    task3.TickFct = &Stacked_Tick;
+
+    task4.state = start;
+    task4.period = 10;
+    task4.elapsedTime = task4.period;
+    task4.TickFct = &Current_Tick;
+
+	
     unsigned short i;
     unsigned long GCD = tasks[0]->period;
     for(i = 1; i < numTasks; i++) {
