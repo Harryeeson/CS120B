@@ -38,6 +38,7 @@ unsigned char x = 0x00;
 unsigned char FirstFlag = 0x00;
 unsigned char temp = 0x00;
 unsigned char cntr = 0x00;
+unsigned long periodArr[8] = {450, 400, 350, 300, 250, 200, 150, 100};
 
 enum LED_States {LED_Start, LED_Display, LED_Reverse, LED_Off};
 int LED_Tick(int state) {
@@ -277,7 +278,7 @@ int Button_Tick(int state) {
 			break;
 
 		case Button_LoseWait:
-			if((~PINA & 0x03) == 0x01) {
+			if((~PINA & 0x03) == 0x01 || (~PINA & 0x03) == 0x03) {
 				state = Button_Reset;
 			}
 			else {
@@ -295,7 +296,7 @@ int Button_Tick(int state) {
 			break;
 
 		case Button_WinWait:
-			if((~PINA & 0x03) == 0x01) {
+			if((~PINA & 0x03) == 0x01 || (~PINA & 0x03) == 0x03) {
 				state = Button_Reset;
 			}
 			else {
@@ -341,6 +342,8 @@ int Button_Tick(int state) {
 				tasks[0]->state = LED_Start;
 			}
 			j++;
+			tasks[0]->period = periodArr[j];
+			tasks[0]->elapsedTime = periodArr[j];
                         if(j == 2 || j == 5) {					// Change block size
 				k++;
 			}
@@ -371,6 +374,8 @@ int Button_Tick(int state) {
 			k = 0x00;
 			cntr = 0x00;
 			tasks[0]->state = LED_Start;
+			tasks[0]->period = periodArr[j];
+			tasks[0]->elapsedTime = periodArr[j];
 			tasks[2]->state = Stacked_Display;
 			tasks[3]->state = Current_Display;
 			pattern = colArr[0];
